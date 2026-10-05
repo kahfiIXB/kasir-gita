@@ -1,3 +1,4 @@
+import { readFile } from "node:fs/promises";
 import dotenv from "dotenv";
 import bcrypt from "bcryptjs";
 import mysql from "mysql2/promise";
@@ -39,6 +40,16 @@ function connectionOptions() {
 const connection = await mysql.createConnection(connectionOptions());
 
 try {
+  const schema = await readFile(new URL("../database/schema.sql", import.meta.url), "utf8");
+  const statements = schema
+    .split(";")
+    .map((statement) => statement.trim())
+    .filter((statement) => statement && !/^(CREATE DATABASE|USE)\b/i.test(statement));
+
+  for (const statement of statements) {
+    await connection.query(statement);
+  }
+
   const accounts = [
     { name: "Admin Toko", username: "admin", password: "admin123", role: "admin" },
     { name: "Kasir Toko", username: "kasir", password: "kasir123", role: "cashier" },
