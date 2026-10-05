@@ -24,9 +24,15 @@ Aplikasi kasir responsif Next.js untuk Laragon dan MySQL. Admin mengelola menu/s
 
 Laragon menyediakan MySQL, sedangkan server aplikasi Next.js berjalan dengan Node.js melalui `npm run dev` (atau `npm run build` lalu `npm run start`).
 
+## Deploy ke Vercel dengan MySQL
+
+Di **Project Settings → Environment Variables**, tambahkan `DATABASE_URL` berisi connection string MySQL dari penyedia database. Aplikasi menggunakan `DATABASE_URL` jika diatur; variabel `DB_HOST`, `DB_PORT`, `DB_USER`, `DB_PASSWORD`, dan `DB_NAME` menjadi fallback untuk Laragon lokal. Jika connection string mengandung `ssl-mode=REQUIRED`, `ssl-mode=VERIFY_CA`, atau `ssl-mode=VERIFY_IDENTITY`, koneksi TLS akan diaktifkan.
+
+Pastikan database MySQL tujuan sudah memiliki tabel dari `database/schema.sql`. Setelah menyimpan environment variable, lakukan redeploy. Jangan commit atau membagikan nilai `DATABASE_URL`; simpan hanya di Vercel Environment Variables atau `.env.local` yang diabaikan Git.
+
 ## Akun demo
 
 - Admin: `admin` / `admin123`
 - Kasir: `kasir` / `kasir123`
 
-Jalankan seed berulang kali dengan aman: akun yang sudah ada tidak ditimpa. Ubah password demo sebelum dipakai di lingkungan publik. Pendaftaran mandiri hanya membuat akun kasir; role admin tidak dapat dipilih dari formulir pendaftaran.
+Jalankan seed berulang kali dengan aman: akun yang sudah ada tidak ditimpa. Ubah password demo sebelum dipakai di lingkungan publik. Login menyediakan pilihan Admin atau Kasir; akun kasir tambahan dibuat oleh admin dari menu Pengguna.

@@ -5,13 +5,38 @@ import mysql from "mysql2/promise";
 dotenv.config({ path: ".env.local" });
 dotenv.config();
 
-const connection = await mysql.createConnection({
-  host: process.env.DB_HOST ?? "127.0.0.1",
-  port: Number(process.env.DB_PORT ?? 3306),
-  user: process.env.DB_USER ?? "root",
-  password: process.env.DB_PASSWORD ?? "",
-  database: process.env.DB_NAME ?? "kasir_gita_db",
-});
+function connectionOptions() {
+  const databaseUrl = process.env.DATABASE_URL;
+  if (!databaseUrl) {
+    return {
+      host: process.env.DB_HOST ?? "127.0.0.1",
+      port: Number(process.env.DB_PORT ?? 3306),
+      user: process.env.DB_USER ?? "root",
+      password: process.env.DB_PASSWORD ?? "",
+      database: process.env.DB_NAME ?? "kasir_gita_db",
+    };
+  }
+
+  let connectionUrl;
+  try {
+    connectionUrl = new URL(databaseUrl);
+  } catch {
+    throw new Error("DATABASE_URL bukan URL MySQL yang valid.");
+  }
+  if (connectionUrl.protocol !== "mysql:") {
+    throw new Error("DATABASE_URL harus menggunakan skema mysql://.");
+  }
+
+  const sslMode = connectionUrl.searchParams.get("ssl-mode")?.toUpperCase();
+  const requiresSsl = ["REQUIRED", "VERIFY_CA", "VERIFY_IDENTITY"].includes(sslMode ?? "");
+  connectionUrl.searchParams.delete("ssl-mode");
+  return {
+    uri: connectionUrl.toString(),
+    ...(requiresSsl ? { ssl: {} } : {}),
+  };
+}
+
+const connection = await mysql.createConnection(connectionOptions());
 
 try {
   const accounts = [
